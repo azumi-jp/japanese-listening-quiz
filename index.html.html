@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Derek's Japanese Listening Quiz — Mobile Edition</title>
+<style>
+:root{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#203248;background:#f3f7fa}*{box-sizing:border-box}body{margin:0;padding:18px 12px 40px}.app{max-width:580px;margin:auto}.header{padding:14px 4px 20px}.eyebrow{font-size:.76rem;letter-spacing:.13em;font-weight:800;color:#58758c}h1{font-size:1.65rem;margin:7px 0}p{line-height:1.55;color:#4e6070}.panel{background:white;border:1px solid #dce6ee;border-radius:20px;padding:22px;box-shadow:0 8px 26px #2032480b}.muted{color:#607487;font-size:.9rem}.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.pill{font-size:.8rem;background:#e9f3fb;color:#245d87;border-radius:100px;padding:6px 11px;font-weight:700}.bar{height:7px;background:#e8eef3;border-radius:100px;overflow:hidden;margin:15px 0 24px}.fill{height:100%;background:#4b83ac;transition:width .2s}.speaker{width:100%;padding:23px 14px;border:1px solid #bdd5e6;background:#eaf4fb;color:#184d76;border-radius:15px;font-size:1.05rem;font-weight:800;cursor:pointer}.speaker:active{transform:scale(.99)}.speaker small{display:block;font-weight:400;margin-top:7px;font-size:.82rem}.question{font-weight:800;margin:23px 0 14px}.choices{display:grid;gap:10px}.choice{background:#fff;color:#253e52;border:1.5px solid #cbd8e2;padding:15px;border-radius:12px;text-align:left;font-size:1rem;cursor:pointer;min-height:52px}.choice:disabled{cursor:default}.choice.correct{background:#e8f7ee;border-color:#29955a;color:#1a683c}.choice.wrong{background:#fff0ee;border-color:#cf685a;color:#963f32}.feedback{padding:14px;border-radius:12px;margin-top:16px;background:#f2f6f9;line-height:1.6}.feedback strong{display:block}.jp{font-size:1.1rem;font-weight:700;color:#1e3e5a}.primary{background:#244f74;color:white;border:0;padding:15px 20px;border-radius:12px;font-size:1rem;font-weight:750;cursor:pointer;width:100%;margin-top:16px}.secondary{background:#edf3f8;color:#234c6d;border:1px solid #cbdce8;padding:13px 16px;border-radius:12px;font-weight:700;cursor:pointer;width:100%;margin-top:10px}.hidden{display:none!important}.small{font-size:.83rem}.notice{margin-top:16px;padding:12px;border-left:3px solid #80abc9;background:#f5f9fc;font-size:.83rem;line-height:1.55}.score{font-size:2.8rem;font-weight:800;margin:14px 0;color:#245a81}.controls{display:flex;gap:10px;margin:14px 0}.controls button{flex:1}.checkline{display:flex;align-items:center;gap:8px;font-size:.91rem;margin-top:14px}.checkline input{width:18px;height:18px}.footer{padding:16px 5px;color:#62788a;font-size:.78rem;line-height:1.55}button:focus-visible,input:focus-visible{outline:3px solid #80b4db;outline-offset:2px}@media(max-width:370px){.panel{padding:15px}h1{font-size:1.45rem}}
+</style>
+</head>
+<body><main class="app">
+<header class="header"><div class="eyebrow">JAPANESE LISTENING PRACTICE</div><h1>🎧 Listen & Choose</h1><p>Listen to a Japanese question, then choose what you heard. You can practice as many times as you like!</p></header>
+<section id="intro" class="panel"><div class="row"><strong>Quick practice</strong><span class="pill">10 questions</span></div><p>Each round selects 10 questions from a bank of 30. The questions and answer choices change order each time.</p><p><strong>How to play</strong></p><p>① Tap <b>Play Japanese question</b>.<br>② Listen without reading the Japanese text.<br>③ Choose the correct answer.<br>④ Check the Japanese text after answering.</p><label class="checkline"><input id="autoplay" type="checkbox"> Automatically play each new question (may not work on phones)</label><button id="start" class="primary">Start listening practice →</button><div class="notice"><strong>On iPhone/Android:</strong> Open this page in Safari or Chrome, not inside a file preview or chat app. If Start does nothing, the viewer may block JavaScript. Hosting the HTML as a website is the reliable solution.<br><br>Audio uses your device's Japanese text-to-speech voice. Tap the speaker button to start audio on phones. If it doesn't play, turn up your volume and try again. For best results, use an updated Chrome, Safari, or Edge browser.</div></section>
+<section id="game" class="panel hidden" aria-live="polite"><div class="row"><span class="pill" id="progressText">Question 1 / 10</span><span class="muted" id="scoreText">0 correct</span></div><div class="bar"><div class="fill" id="progressFill" style="width:10%"></div></div><button class="speaker" id="play" aria-label="Play Japanese question">🔊 Play Japanese question<small>Tap again to replay</small></button><p class="question" id="questionLabel"></p><div id="choices" class="choices"></div><div id="feedback" class="feedback hidden"></div><button id="next" class="primary hidden">Next question →</button></section>
+<section id="finish" class="panel hidden"><div class="eyebrow">ROUND COMPLETE</div><h2>Great work!</h2><div class="score" id="finalScore"></div><p id="finalMessage"></p><button class="primary" id="retryWrong">Practice missed questions</button><button class="secondary" id="newRound">New random round (10 questions)</button><p class="muted small">Practice results stay on this device only during this session. Nothing is sent to your teacher.</p></section>
+<footer class="footer">For listening practice only. This is not a standardized test. Repeated questions can become familiar; your teacher will check new questions in lessons.</footer>
+</main>
+<script>
+'use strict';
+// kind: wh = recognize question word, tense = recognize tense.
+const whOptions=['Time','Place','Transportation','Activity / thing','Person','Duration'];
+const tenseOptions=['Past','Present / future','Past negative','Present negative'];
+const bank=[
+{id:1,k:'wh',s:'昨日は何時に寝ましたか？',a:'Time',why:'何時に asks about a time.'},
+{id:2,k:'wh',s:'今日は何時に家を出ましたか？',a:'Time',why:'何時に asks about a time.'},
+{id:3,k:'wh',s:'明日は何時に起きますか？',a:'Time',why:'何時に asks about a time.'},
+{id:4,k:'wh',s:'昨日はどこで昼ご飯を食べましたか？',a:'Place',why:'どこで asks where an action happened.'},
+{id:5,k:'wh',s:'週末はどこで買い物をしますか？',a:'Place',why:'どこで asks about a place.'},
+{id:6,k:'wh',s:'昨日はどこで日本語を勉強しましたか？',a:'Place',why:'どこで asks about a place.'},
+{id:7,k:'wh',s:'今日、仕事に何で行きましたか？',a:'Transportation',why:'何で, in this travel question, asks about transportation.'},
+{id:8,k:'wh',s:'明日はスーパーに何で行きますか？',a:'Transportation',why:'何で, in this travel question, asks how you travel.'},
+{id:9,k:'wh',s:'昨日、駅まで何で行きましたか？',a:'Transportation',why:'何で, in this travel question, asks about transportation.'},
+{id:10,k:'wh',s:'昨日の夜、何を食べましたか？',a:'Activity / thing',why:'何を asks what you ate.'},
+{id:11,k:'wh',s:'週末は何をしますか？',a:'Activity / thing',why:'何を asks what you will do.'},
+{id:12,k:'wh',s:'昨日、何を買いましたか？',a:'Activity / thing',why:'何を asks what you bought.'},
+{id:13,k:'wh',s:'昨日は誰と話しましたか？',a:'Person',why:'誰と asks which person you talked with.'},
+{id:14,k:'wh',s:'スーパーまでどれくらいかかりますか？',a:'Duration',why:'どれくらいかかる asks how long it takes.'},
+{id:15,k:'wh',s:'昨日は何分勉強しましたか？',a:'Duration',why:'何分 asks how many minutes.'},
+{id:16,k:'tense',s:'昨日、スーパーに行きましたか？',a:'Past',why:'行きましたか is past affirmative.'},
+{id:17,k:'tense',s:'明日、スーパーに行きますか？',a:'Present / future',why:'行きますか is non-past; 明日 refers to tomorrow.'},
+{id:18,k:'tense',s:'昨日、本を読みましたか？',a:'Past',why:'読みましたか is past affirmative.'},
+{id:19,k:'tense',s:'今晩、本を読みますか？',a:'Present / future',why:'読みますか is non-past; 今晩 refers to tonight.'},
+{id:20,k:'tense',s:'昨日、日本語を勉強しましたか？',a:'Past',why:'勉強しましたか is past affirmative.'},
+{id:21,k:'tense',s:'毎日、日本語を勉強しますか？',a:'Present / future',why:'勉強しますか is non-past and can describe a habit.'},
+{id:22,k:'tense',s:'昨日、テレビを見ませんでしたか？',a:'Past negative',why:'見ませんでしたか is past negative.'},
+{id:23,k:'tense',s:'今日はテレビを見ませんか？',a:'Present negative',why:'見ませんか uses the non-past negative form. It can also be an invitation.'},
+{id:24,k:'tense',s:'昨日、仕事に行きませんでしたか？',a:'Past negative',why:'行きませんでしたか is past negative.'},
+{id:25,k:'tense',s:'日曜日は仕事に行きませんか？',a:'Present negative',why:'行きませんか is non-past negative (sometimes used as an invitation).'},
+{id:26,k:'tense',s:'昨日、朝ご飯を食べましたか？',a:'Past',why:'食べましたか is past affirmative.'},
+{id:27,k:'tense',s:'明日、朝ご飯を食べますか？',a:'Present / future',why:'食べますか is non-past; 明日 indicates future.'},
+{id:28,k:'tense',s:'昨日、車で行きましたか？',a:'Past',why:'行きましたか is past affirmative.'},
+{id:29,k:'tense',s:'いつも車で行きますか？',a:'Present / future',why:'行きますか is non-past and can describe a habit.'},
+{id:30,k:'tense',s:'昨日、買い物をしませんでしたか？',a:'Past negative',why:'しませんでしたか is past negative.'}
+];
+const $=id=>document.getElementById(id);
+function shuffle(a){var b=a.slice();for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=b[i];b[i]=b[j];b[j]=t;}return b;}
+let round=[],idx=0,score=0,missed=[],selected=false,voice=null;
+function chooseRound(){return shuffle(bank.filter(q=>q.k==='wh')).slice(0,5).concat(shuffle(bank.filter(q=>q.k==='tense')).slice(0,5)).sort(()=>Math.random()-.5)}
+function show(id){['intro','game','finish'].forEach(x=>$(x).classList.toggle('hidden',x!==id))}
+function pickVoice(){if(!('speechSynthesis' in window))return null;let voices=speechSynthesis.getVoices();return voices.find(v=>v.lang.toLowerCase()==='ja-jp'&&v.localService)||voices.find(v=>v.lang.toLowerCase().startsWith('ja'))||null}
+function speak(){if(!('speechSynthesis' in window)){alert('Speech is not supported in this browser. Try Chrome, Safari, or Edge.');return}speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(round[idx].s);utterance.lang='ja-JP';utterance.rate=.86;utterance.pitch=1;voice=pickVoice();if(voice)utterance.voice=voice;speechSynthesis.speak(utterance)}
+if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=pickVoice}
+function startRound(items){round=items;idx=0;score=0;missed=[];show('game');render()}
+function render(){selected=false;const q=round[idx];$('progressText').textContent=`Question ${idx+1} / ${round.length}`;$('scoreText').textContent=`${score} correct`;$('progressFill').style.width=`${100*(idx+1)/round.length}%`;$('questionLabel').textContent=q.k==='wh'?'What is the question asking about?':'Which verb form did you hear?';$('feedback').classList.add('hidden');$('next').classList.add('hidden');const options=shuffle(q.k==='wh'?whOptions:tenseOptions).slice(0,4);if(!options.includes(q.a))options[Math.floor(Math.random()*options.length)]=q.a;const wrap=$('choices');wrap.innerHTML='';for(const o of shuffle(options)){const btn=document.createElement('button');btn.className='choice';btn.textContent=o;btn.onclick=()=>answer(o);wrap.appendChild(btn)}if($('autoplay').checked)setTimeout(speak,220)}
+function answer(value){if(selected)return;selected=true;if('speechSynthesis' in window){speechSynthesis.cancel()}const q=round[idx];const correct=value===q.a;if(correct)score++;else missed.push(q);$('scoreText').textContent=`${score} correct`;for(const b of $('choices').children){b.disabled=true;if(b.textContent===q.a)b.classList.add('correct');else if(b.textContent===value)b.classList.add('wrong')};const f=$('feedback');f.innerHTML='';const lead=document.createElement('strong');lead.textContent=correct?'✓ Correct!':'Not quite — check the question:';const jp=document.createElement('div');jp.className='jp';jp.textContent=q.s;const explanation=document.createElement('div');explanation.textContent=q.why;f.appendChild(lead);f.appendChild(jp);f.appendChild(explanation);f.classList.remove('hidden');$('next').textContent=idx===round.length-1?'See results →':'Next question →';$('next').classList.remove('hidden')}
+function next(){if(idx<round.length-1){idx++;render()}else{show('finish');$('finalScore').textContent=`${score} / ${round.length}`;$('finalMessage').textContent=missed.length?`You missed ${missed.length} question${missed.length===1?'':'s'}. You can try those again, or start a new round.`:'Excellent! You got them all. Try a new random round to practice different questions.';$('retryWrong').classList.toggle('hidden',!missed.length)}}
+$('start').onclick=function(){try{startRound(chooseRound())}catch(e){alert('Quiz could not start: '+e.message)}};$('play').onclick=speak;$('next').onclick=next;$('retryWrong').onclick=()=>startRound(shuffle(missed));$('newRound').onclick=()=>startRound(chooseRound());
+</script></body></html>
